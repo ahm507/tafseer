@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <group android:checkableBehavior="single">
+        <!--<item-->
+            <!--android:id="@+id/nav_home_screen"-->
+            <!--android:icon="@drawable/ic_menu_camera"-->
+            <!--android:title="الشاشة الرئيسية"/>-->
+        <!--<item-->
+            <!--android:id="@+id/nav_search"-->
+            <!--android:icon="@drawable/ic_menu_gallery"-->
+            <!--android:title="بحث"/>-->
+        <!--<item-->
+            <!--android:id="@+id/nav_about_us"-->
+            <!--android:icon="@drawable/ic_menu_slideshow"-->
+            <!--android:title="عن البرنامج"/>-->
+        <!--<item-->
+            <!--android:id="@+id/nav_manage"-->
+            <!--android:icon="@drawable/ic_menu_manage"-->
+            <!--android:title="Exit"/>-->
+    </group>
+
+    <!--<item android:title="Developed and edited by Sonna some organization of someting other than anything else of the same issues">-->
+        <!--<menu>-->
+            <!--<item-->
+                <!--android:id="@+id/nav_share"-->
+                <!--android:icon="@drawable/ic_menu_share"-->
+                <!--android:title="Share"/>-->
+            <!--<item-->
+                <!--android:id="@+id/nav_send"-->
+                <!--android:icon="@drawable/ic_menu_send"-->
+                <!--android:title="Send"/>-->
+        <!--</menu>-->
+    <!--</item>-->
+
+</menu>
