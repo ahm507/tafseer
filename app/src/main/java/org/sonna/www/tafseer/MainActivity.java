@@ -1,4 +1,4 @@
-package org.sonna.www.sonna;
+package org.sonna.www.tafseer;
 
 import android.app.AlertDialog;
 import android.content.Context;
@@ -18,6 +18,7 @@ import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
+import android.webkit.WebView;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
@@ -191,7 +192,7 @@ public class MainActivity extends AppCompatActivity
 	void displayPreviousContents() {
 		String page_id = historyStack.pop();
 
-		TextView display = (TextView) findViewById(R.id.textViewDisplay);
+		WebView display = (WebView) findViewById(R.id.textViewDisplay);
 		ListView tabweeb = (ListView) findViewById(R.id.listViewTabweeb);
 
 		if (dbHelper.IsLeafItem(curBookCode, page_id)) {
@@ -200,6 +201,7 @@ public class MainActivity extends AppCompatActivity
 			displayContent(curBookCode, page_id, "");
 		} else {
 			display.setVisibility(View.GONE);
+			display.loadData("", "text/html; charset=UTF-8", null);
 			tabweeb.setVisibility(View.VISIBLE);
 			displayKids(curBookCode, page_id);
 		}
@@ -209,9 +211,12 @@ public class MainActivity extends AppCompatActivity
 	ArrayList<DbRecord> curRecords = new ArrayList<>();
 	Stack<String> historyStack = new Stack<>();
 
+	String htmlPagePrefix = "<html><body style='direction: rtl; text-align:justify; align-content: right;  text-align=right'><span align='right'>";
+	String htmlPagePostfix = "</span></body><html>";
+
 	protected void displayContent(String book_code, String page_id, String searchWords) {
 		try {
-			TextView displayTextView = (TextView) findViewById(R.id.textViewDisplay);
+			WebView displayTextView = (WebView) findViewById(R.id.textViewDisplay);
 			displayTextView.setOnTouchListener(new View.OnTouchListener() {
 				@Override
 				public boolean onTouch(View v, MotionEvent event) {
@@ -220,7 +225,9 @@ public class MainActivity extends AppCompatActivity
 			});
 			ArrayList<DbRecord> records = dbHelper.getDisplayData(book_code, page_id);
 			if (records.size() != 1) {
-				displayTextView.setText(Html.fromHtml("")); //just empty
+//				displayTextView.setText(Html.fromHtml("")); //just empty
+				displayTextView.loadData("", "text/html; charset=UTF-8", null);
+
 			} else {
 				DbRecord record = records.get(0);
 				String content = record.page;
@@ -232,9 +239,10 @@ public class MainActivity extends AppCompatActivity
 				}
 
 				//Add title
-				content = "<font color=\"blue\">" + record.title + "</font><hr><br><br>" + content;
-
-				displayTextView.setText(Html.fromHtml(content));
+				content = "<br><font color=\"blue\">" + record.title + "</font><hr>" + content;
+				String htmlContent = htmlPagePrefix + content + htmlPagePostfix;
+//				displayTextView.setText(Html.fromHtml(content));
+				displayTextView.loadData(htmlContent, "text/html; charset=UTF-8", null);
 				curBookCode = record.book_code;
 				curPageId = record.page_id;
 			}
@@ -269,7 +277,7 @@ public class MainActivity extends AppCompatActivity
 				public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 					DbRecord record = curRecords.get(position);
 					historyStack.push(curPageId); //is going to change per user click
-					TextView display = (TextView) findViewById(R.id.textViewDisplay);
+					WebView display = (WebView) findViewById(R.id.textViewDisplay);
 					ListView tabweeb = (ListView) findViewById(R.id.listViewTabweeb);
 
 					if (dbHelper.IsLeafItem(record.book_code, record.page_id)) {
@@ -278,6 +286,7 @@ public class MainActivity extends AppCompatActivity
 						displayContent(record.book_code, record.page_id, "");
 					} else {
 						display.setVisibility(View.GONE);
+						display.loadData("", "text/html; charset=UTF-8", null);
 						tabweeb.setVisibility(View.VISIBLE);
 						displayKids(record.book_code, record.page_id);
 
@@ -466,29 +475,6 @@ public class MainActivity extends AppCompatActivity
 			if (word.length() > 0) {
 				String processedWord = processArabicWord(word);
 
-//				bodyString = bodyString.replace(new RegExp(processedWord, 'g'),
-//						function (found) {
-//					console.log("found word is:[" + found + "]");
-//					//can skip first and last word breakers from highlighting
-//					var i = 0;
-//					var result = "";
-//					while (wordBoundary.indexOf(found[i]) != -1) { //is a boundary char
-//						result += found[i];
-//						i++;
-//					}
-//					result += spanStart;
-//					while (wordBoundary.indexOf(found[i]) == -1) { //is not a boundary char
-//						result += found[i];
-//						i++;
-//					}
-//					result += spanEnd;
-//					result += found.substring(i, found.length);
-//
-//					return result;
-//				}
-//				);
-				//bodyString = bodyString.replaceAll(processedWord, "ELLAH");
-//				bodyString = bodyString.replaceAll("(" + processedWord + ")", "\\0");
 				bodyString = bodyString.replaceAll("(" + processedWord + ")", spanStart + word + spanEnd);
 
 

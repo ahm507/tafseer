@@ -1,4 +1,4 @@
-package org.sonna.www.sonna;
+package org.sonna.www.tafseer;
 
 import android.content.Context;
 import android.database.Cursor;
@@ -64,7 +64,7 @@ public class DatabaseAdaptor {
 		return out;
 	}
 
-
+	//returns single page record
 	public ArrayList<DbRecord> getDisplayData(String book_code, String page_id) {
 		String sql = "SELECT * FROM pages where pages MATCH ?";
 		String params = new Formatter().format("book_code:%s page_id:%s", book_code, page_id).toString();

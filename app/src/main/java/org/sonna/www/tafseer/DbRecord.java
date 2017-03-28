@@ -1,4 +1,4 @@
-package org.sonna.www.sonna;
+package org.sonna.www.tafseer;
 
 public class DbRecord {
 
