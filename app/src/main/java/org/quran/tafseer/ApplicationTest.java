@@ -1,4 +1,4 @@
-package org.sonna.www.sonna;
+package org.quran.tafseer;
 
 import android.app.Application;
 import android.test.ApplicationTestCase;

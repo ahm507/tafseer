@@ -1,4 +1,4 @@
-package org.sonna.www.tafseer;
+package org.quran.tafseer;
 
 /**
  * Created by Macpro on 3/Apr/17.

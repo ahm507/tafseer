@@ -1,4 +1,4 @@
-package org.sonna.www.tafseer;
+package org.quran.tafseer;
 
 public class Book {
 

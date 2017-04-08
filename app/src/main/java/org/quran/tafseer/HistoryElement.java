@@ -1,17 +1,17 @@
-package org.sonna.www.tafseer;
+package org.quran.tafseer;
 
 public class HistoryElement {
 
 	String pageId;
 	private int position;
 
-	HistoryElement (String pageId, int position) {
+	public HistoryElement (String pageId, int position) {
 		this.pageId = pageId;
 		this.position = position;
 
 	}
 
-	String getPageId() {
+	public String getPageId() {
 		return pageId;
 	}
 

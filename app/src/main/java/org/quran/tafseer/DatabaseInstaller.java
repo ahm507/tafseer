@@ -1,4 +1,4 @@
-package org.sonna.www.tafseer;
+package org.quran.tafseer;
 
 import android.content.Context;
 import android.database.SQLException;
