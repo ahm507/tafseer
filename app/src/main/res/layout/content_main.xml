@@ -26,7 +26,7 @@
         android:layout_alignParentTop="true"
         android:layout_alignParentBottom="true"/>
 
-    <TextView
+    <WebView
         android:id="@+id/textViewDisplay"
         android:layout_width="match_parent"
         android:layout_height="174dp"

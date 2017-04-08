@@ -9,20 +9,20 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Formatter;
 
-public class DatabaseAdaptor {
+public class BookRepository {
 
-	protected static final String LOG_TAG = "DatabaseAdaptor";
+	protected static final String LOG_TAG = "BookRepository";
 
 	private final Context mContext;
 	private SQLiteDatabase mDb;
 	private DatabaseInstaller mDbHelper;
 
-	public DatabaseAdaptor(Context context) {
+	public BookRepository(Context context) {
 		this.mContext = context;
 		mDbHelper = new DatabaseInstaller(mContext);
 	}
 
-	public DatabaseAdaptor install() throws SQLException {
+	public BookRepository install() throws SQLException {
 		try {
 			mDbHelper.install();
 		} catch (IOException mIOException) {
@@ -32,7 +32,7 @@ public class DatabaseAdaptor {
 		return this;
 	}
 
-	public DatabaseAdaptor open() throws SQLException {
+	public BookRepository open() throws SQLException {
 		try {
 			mDbHelper.openDataBase();
 			mDbHelper.close();
@@ -48,11 +48,11 @@ public class DatabaseAdaptor {
 		mDbHelper.close();
 	}
 
-	private ArrayList<DbRecord> selectData(String sql, String args[]) {
+	private ArrayList<Book> selectData(String sql, String args[]) {
 		Cursor cursor = mDb.rawQuery(sql, args);
-		ArrayList<DbRecord> out = new ArrayList<>();
+		ArrayList<Book> out = new ArrayList<>();
 		while (cursor != null && cursor.moveToNext()) {
-			DbRecord record = new DbRecord();
+			Book record = new Book();
 			record.page_id = cursor.getString(0);
 			record.parent_id = cursor.getString(1);
 			record.book_code = cursor.getString(2);
@@ -65,14 +65,14 @@ public class DatabaseAdaptor {
 	}
 
 	//returns single page record
-	public ArrayList<DbRecord> getDisplayData(String book_code, String page_id) {
+	public ArrayList<Book> getDisplayData(String book_code, String page_id) {
 		String sql = "SELECT * FROM pages where pages MATCH ?";
 		String params = new Formatter().format("book_code:%s page_id:%s", book_code, page_id).toString();
 		String args[] = new String[]{params};
 		return selectData(sql, args);
 	}
 
-	public ArrayList<DbRecord> getKidsData(String book_code, String page_id) {
+	public ArrayList<Book> getKidsData(String book_code, String page_id) {
 		String args[];
 		String sql;
 		if ("".equals(page_id)) {
@@ -99,7 +99,7 @@ public class DatabaseAdaptor {
 		return ( ! existKids );
 	}
 
-	public ArrayList<DbRecord> search(String terms, int pageLength, int pageNo) {
+	public ArrayList<Book> search(String terms, int pageLength, int pageNo) {
 		String sql = "SELECT * FROM pages where pages MATCH ? order by book_code,page_id LIMIT ? OFFSET ? ";
 		String book_code = ""; //search all books
 //		String ftsQuery = strf("book_code:{0} {1}", book_code, modifiedQuery);
@@ -107,9 +107,9 @@ public class DatabaseAdaptor {
 //		String ftsQuery = new Formatter().format("%s", book_code, terms).toString();
 		String args[] = {terms, String.valueOf(pageLength), String.valueOf((pageNo - 1) * pageLength)};
 		Cursor cursor = mDb.rawQuery(sql, args);
-		ArrayList<DbRecord> out = new ArrayList<>();
+		ArrayList<Book> out = new ArrayList<>();
 		while (cursor != null && cursor.moveToNext()) {
-			DbRecord record = new DbRecord();
+			Book record = new Book();
 			record.page_id = cursor.getString(0);
 			record.parent_id = cursor.getString(1);
 			record.book_code = cursor.getString(2);

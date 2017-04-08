@@ -36,7 +36,7 @@ public class MainActivity extends AppCompatActivity
 {
 
 	protected static final String LOG_TAG = "MainActivity";
-	DatabaseAdaptor dbHelper;
+	BookRepository dbHelper;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -48,33 +48,11 @@ public class MainActivity extends AppCompatActivity
 		Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
 		setSupportActionBar(toolbar);
 
-//        Floating bar at the bottom
-//        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-//        fab.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
-//                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-//                        .setAction("Action", null).show();
-//            }
-//        });
-
 		DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
 		ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
 				this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
 		drawer.setDrawerListener(toggle);
 		toggle.syncState();
-
-//		NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
-//		navigationView.setNavigationItemSelectedListener(this);
-
-
-//		Button searchButton = (Button)findViewById(R.id.mysearch_button);
-//		searchButton.setOnClickListener(new View.OnClickListener() {
-//			@Override
-//			public void onClick(View v) {
-//				search();
-//			}
-//		});
 
 
 /////////////////////////////////////////////////////////////
@@ -99,9 +77,9 @@ public class MainActivity extends AppCompatActivity
 //		hourGlassDlg.hide();
 
 		//Open DB and display initial view
-		dbHelper = new DatabaseAdaptor(context);
+		dbHelper = new BookRepository(context);
 		dbHelper.open();
-		displayKids("", "");
+		displayKids("", "", 0);
 	}
 
 	@Override
@@ -140,8 +118,8 @@ public class MainActivity extends AppCompatActivity
 
 		//noinspection SimplifiableIfStatement
 		if (id == R.id.nav_home_screen) {
-			historyStack.push(curPageId);
-			displayKids("", "");
+			historyStack.push(new HistoryElement(curPageId, 0)); //gog to home screen.
+			displayKids("", "", 0);
 			findViewById(R.id.textViewDisplay).setVisibility(View.GONE);
 			findViewById(R.id.listViewTabweeb).setVisibility(View.VISIBLE);
 			return true;
@@ -156,41 +134,19 @@ public class MainActivity extends AppCompatActivity
 			intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 			intent.addCategory(Intent.CATEGORY_HOME);
 			startActivity(intent);
-
 			return true;
-
 		}
 
 		return super.onOptionsItemSelected(item);
 	}
 
-//	@Override
-//	public boolean onNavigationItemSelected(MenuItem item) {
-//		// Handle navigation view item clicks here.
-//		int id = item.getItemId();
-//
-//		if (id == R.id.nav_home_screen) {
-//			historyStack.push(curPageId);
-//			displayKids("", "");
-//			displayContent("", "");
-//		} else if (id == R.id.nav_search) {
-//			TextView msgTextView = (TextView) findViewById(R.id.textViewDisplay);
-//			msgTextView.setVisibility(View.GONE);
-//
-//		} else if (id == R.id.nav_about_us) {
-//			TextView msgTextView = (TextView) findViewById(R.id.textViewDisplay);
-//			msgTextView.setVisibility(View.VISIBLE);
-//		}
-//
-//		DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-//		drawer.closeDrawer(GravityCompat.START);
-//		return true;
-//	}
-
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	void displayPreviousContents() {
-		String page_id = historyStack.pop();
+//		String page_id = historyStack.pop();
+		HistoryElement state = historyStack.pop();
+		String page_id = state.getPageId();
+		int position = state.getPosition();
 
 		WebView display = (WebView) findViewById(R.id.textViewDisplay);
 		ListView tabweeb = (ListView) findViewById(R.id.listViewTabweeb);
@@ -203,16 +159,13 @@ public class MainActivity extends AppCompatActivity
 			display.setVisibility(View.GONE);
 			display.loadData("", "text/html; charset=UTF-8", null);
 			tabweeb.setVisibility(View.VISIBLE);
-			displayKids(curBookCode, page_id);
+			displayKids(curBookCode, page_id, position);
 		}
 	}
 
 	String curBookCode = "", curPageId = "";
-	ArrayList<DbRecord> curRecords = new ArrayList<>();
-	Stack<String> historyStack = new Stack<>();
-
-	String htmlPagePrefix = "<html><body style='direction: rtl; text-align:justify; align-content: right;  text-align=right'><span align='right'>";
-	String htmlPagePostfix = "</span></body><html>";
+	ArrayList<Book> curRecords = new ArrayList<>();
+	Stack<HistoryElement> historyStack = new Stack<>();
 
 	protected void displayContent(String book_code, String page_id, String searchWords) {
 		try {
@@ -223,28 +176,57 @@ public class MainActivity extends AppCompatActivity
 					return handleSwipeLeftAndRight(event);
 				}
 			});
-			ArrayList<DbRecord> records = dbHelper.getDisplayData(book_code, page_id);
+			ArrayList<Book> records = dbHelper.getDisplayData(book_code, page_id);
+
+			//IF END OF BOOK REACHED
+			if(records.size() == 0) {
+				return; // DO NO THING
+			}
 			if (records.size() != 1) {
 //				displayTextView.setText(Html.fromHtml("")); //just empty
 				displayTextView.loadData("", "text/html; charset=UTF-8", null);
 
 			} else {
-				DbRecord record = records.get(0);
-				String content = record.page;
-				content = content.replaceAll("##", "<br><hr>");
-				content = content.replaceAll("\n", "<br>");
-//        		bodyString += "<hr><p class='footnote-app-text'>" + footnote + "</p>";
-				if(searchWords.trim().length() > 0) { //highlight search text
-					content = highlight(content, searchWords);
-				}
+				Book record = records.get(0);
+				//Usually the book root. We come here as a previous gesture on the first record.
+//				if(record.parent_id.equals("NO_PARENT")) {
+//					return;
+//				}
 
-				//Add title
-				content = "<br><font color=\"blue\">" + record.title + "</font><hr>" + content;
-				String htmlContent = htmlPagePrefix + content + htmlPagePostfix;
-//				displayTextView.setText(Html.fromHtml(content));
+				String htmlContent = "";
+				if(record.book_code.endsWith("_txt")) {
+					String content = record.page;
+					content = content.replaceAll("##", "<br><hr>");
+					content = content.replaceAll("\n", "<br>");
+					//        		bodyString += "<hr><p class='footnote-app-text'>" + footnote + "</p>";
+					if (searchWords.trim().length() > 0) { //highlight search text
+						content = Highlight.highlight(content, searchWords);
+					}
+
+					//Add title
+					content = "<br><font color=\"blue\">" + record.title + "</font><hr>" + content;
+					String htmlPagePrefix = "<html><body style='direction: rtl; text-align:justify; align-content: right;  text-align=right'><span align='right'>";
+					String htmlPagePostfix = "</span></body><html>";
+					htmlContent = htmlPagePrefix + content + htmlPagePostfix;
+				} else if(record.book_code.endsWith("_html")) { //html file
+					String content = record.page;
+					if (searchWords.trim().length() > 0) { //highlight search text
+						content = Highlight.highlight(content, searchWords);
+					}
+					//Add title
+//					content = "<br><font color=\"blue\">" + record.title + "</font><hr>" + content;
+//					String htmlPagePrefix = "<html><body style='direction: rtl; text-align:justify; align-content: right;  text-align=right'><span align='right'>";
+//					String htmlPagePostfix = "</span></body><html>";
+//					htmlContent = htmlPagePrefix + content + htmlPagePostfix;
+					htmlContent = content;
+				} else {
+					throw new Exception("Unknown file type, book_id should end with .txt or .html");
+				}
 				displayTextView.loadData(htmlContent, "text/html; charset=UTF-8", null);
 				curBookCode = record.book_code;
 				curPageId = record.page_id;
+
+
 			}
 		} catch (Exception exception) {
 			Log.e(LOG_TAG, "exception", exception);
@@ -252,14 +234,14 @@ public class MainActivity extends AppCompatActivity
 		}
 	}
 
-	protected void displayKids(String book_code, String page_id) {
+	protected void displayKids(String book_code, String page_id, int position) {
 		try {
 			curBookCode = book_code;
 			curPageId = page_id;
-			ArrayList<DbRecord> records = dbHelper.getKidsData(book_code, page_id);
+			ArrayList<Book> records = dbHelper.getKidsData(book_code, page_id);
 			final ArrayList<String> list = new ArrayList<>();
 			curRecords.clear();
-			for (DbRecord record : records) {
+			for (Book record : records) {
 				list.add(record.title);
 				curRecords.add(record);
 			}
@@ -270,13 +252,17 @@ public class MainActivity extends AppCompatActivity
 			ArrayAdapter<String> adapter = new ArrayAdapter<>(this,
 					android.R.layout.simple_list_item_1, android.R.id.text1, list);
 			listView.setAdapter(adapter);
+			//set vertical position as before
+			listView.setSelection(position);
+
 
 			// ListView Item Click Listener
 			listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 				@Override
 				public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-					DbRecord record = curRecords.get(position);
-					historyStack.push(curPageId); //is going to change per user click
+
+					Book record = curRecords.get(position);
+					historyStack.push(new HistoryElement(curPageId, position)); //is going to change per user click
 					WebView display = (WebView) findViewById(R.id.textViewDisplay);
 					ListView tabweeb = (ListView) findViewById(R.id.listViewTabweeb);
 
@@ -288,7 +274,7 @@ public class MainActivity extends AppCompatActivity
 						display.setVisibility(View.GONE);
 						display.loadData("", "text/html; charset=UTF-8", null);
 						tabweeb.setVisibility(View.VISIBLE);
-						displayKids(record.book_code, record.page_id);
+						displayKids(record.book_code, record.page_id, 0);
 
 					}
 				}
@@ -314,7 +300,7 @@ public class MainActivity extends AppCompatActivity
 	}
 
 	//Seems search can has its own class
-	ArrayList<DbRecord> curSearchHits = new ArrayList<>();
+	ArrayList<Book> curSearchHits = new ArrayList<>();
 	int currentSearchPagesCount;
 	int currentSearchPageNumber;
 	final int pageLength = 50;
@@ -335,10 +321,10 @@ public class MainActivity extends AppCompatActivity
 		TextView paging = (TextView) findViewById(R.id.text_view_paging);
 		paging.setText(Html.fromHtml(getPagingString(totalHitsCount)));
 
-		ArrayList<DbRecord> hits = dbHelper.search(searchWords, pageLength, pageNumber);
+		ArrayList<Book> hits = dbHelper.search(searchWords, pageLength, pageNumber);
 		curSearchHits.clear();
 		final ArrayList<String> list = new ArrayList<>();
-		for (DbRecord record : hits) {
+		for (Book record : hits) {
 			list.add(record.title);
 			curSearchHits.add(record);
 		}
@@ -352,8 +338,11 @@ public class MainActivity extends AppCompatActivity
 		listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 			@Override
 			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-				DbRecord record = curSearchHits.get(position);
-				historyStack.push(curPageId); //is going to change per user click
+				Book record = curSearchHits.get(position);
+//				int verticalScroll = view.getVerticalScrollbarPosition()
+				int verticalScroll = 0;
+
+				historyStack.push(new HistoryElement(curPageId, verticalScroll)); //is going to change per user click
 				findViewById(R.id.textViewDisplay).setVisibility(View.VISIBLE);
 				findViewById(R.id.listViewTabweeb).setVisibility(View.GONE);
 
@@ -438,53 +427,5 @@ public class MainActivity extends AppCompatActivity
 		aboutAlert.show();
 	}
 
-	String  processArabicWord(String arabic) {
-		String wordBoundary = "[ .\\(\\),،\\-]+";
-//		Python line of code
-//		word_boundary_re = u'[ ;:,،.«»\'\"\\(\\)\\-\\{\\}\\<\\>]'  # Just one character must exist (+ is one or more)
-
-		String result = "";
-		//unicode diacritics letters from url,
-		//http://unicode.org/charts/PDF/U0600.pdf
-		String vowels = "[\u064B-\u065F]*";
-
-		for (int i = 0; i < arabic.length(); i++) {
-			result += arabic.charAt(i) + vowels;
-		}
-		//Insert word boundary mark
-//		result = "\b" + result + "\b"; // DOES NOT WORK with ARABIC
-//		result = wordBoundary + result + wordBoundary;
-		return result;
-	}
-
-
-	public String highlight(String bodyString, String highlightWords) {
-//    highlightWords = highlightWords.trim();
-		//Because of word boundary problem, I have to add space at the start and at the end
-//		bodyString = " " + bodyString + " ";
-//    console.log("highlighted word is:" + result);
-//		String words = highlightWords.split(" ");
-		String spanStart = "<font color=\"red\">";
-		String spanEnd = "</font>";
-//		content += "<font color=\"red\">This is some red color text!</font>";
-//		for (var i = 0; i < words.length; i++) {
-
-		for (String word : highlightWords.split(" ")) {
-//			var word = words[i].trim();
-			word = word.trim();
-			if (word.length() > 0) {
-				String processedWord = processArabicWord(word);
-
-				bodyString = bodyString.replaceAll("(" + processedWord + ")", spanStart + word + spanEnd);
-
-
-
-			}
-		}
-
-		//Now, remove the inserted space at the start and at the end
-//		bodyString = bodyString.substring(1, bodyString.length() - 1);
-		return bodyString;
-	}
 
 }

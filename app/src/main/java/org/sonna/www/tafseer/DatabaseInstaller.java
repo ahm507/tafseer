@@ -15,6 +15,7 @@ import java.io.OutputStream;
 
 public class DatabaseInstaller extends SQLiteOpenHelper {
 	private static String LOG_TAG = "DatabaseInstaller"; // Tag just for the LogCat window
+
 	//destination path (location) of our database on device
 	private static String DB_PATH = "";
 	private static String DB_NAME = "books.sqlite";// Database name
@@ -33,6 +34,14 @@ public class DatabaseInstaller extends SQLiteOpenHelper {
 
 	public void install() throws IOException {
 		boolean mDataBaseExist = isDatabaseExist();
+
+//		if(mDataBaseExist) {
+//			//remove the old file
+//			File dbFile = new File(DB_PATH + DB_NAME);
+//			dbFile.delete();
+//			Log.e(LOG_TAG, "old file is removed");
+//		}
+
 		if (!mDataBaseExist) {
 			this.getReadableDatabase();
 			this.close();
@@ -84,13 +93,18 @@ public class DatabaseInstaller extends SQLiteOpenHelper {
 
 	@Override
 	public void onCreate(SQLiteDatabase sqLiteDatabase) {
+		int x = 111;
+		x = x + 12;
 
 	}
 
 	@Override
-	public void onUpgrade(SQLiteDatabase sqLiteDatabase, int i, int i1) {
-
+	public void onUpgrade(SQLiteDatabase sqLiteDatabase, int oldVersion, int newVersion) {
+		int x = 111;
+		x = x + 12;
 	}
+
+
 }
 
 //String outFileName = DB_PATH + DB_NAME;
