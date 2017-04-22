@@ -7,12 +7,12 @@
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
-        android:label="التفسير"
+        android:label="بهجة المسير"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
             android:name="org.quran.tafseer.MainActivity"
-            android:label="التفسير"
+            android:label="بهجة المسير"
             android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>

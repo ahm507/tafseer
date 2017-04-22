@@ -18,6 +18,7 @@ public class DatabaseInstaller extends SQLiteOpenHelper {
 
 	//destination path (location) of our database on device
 	private static String DB_PATH = "";
+//	private static String DB_NAME_OLD = "books.sqlite";// Database name
 	private static String DB_NAME = "books.sqlite";// Database name
 	private SQLiteDatabase mDataBase;
 	private final Context mContext;
@@ -42,7 +43,10 @@ public class DatabaseInstaller extends SQLiteOpenHelper {
 //			Log.e(LOG_TAG, "old file is removed");
 //		}
 
-		if (!mDataBaseExist) {
+		//Remove old file: Currentely database file is very small
+		new File(DB_PATH + DB_NAME).delete();
+
+//		if (!mDataBaseExist) {
 			this.getReadableDatabase();
 			this.close();
 			try {
@@ -52,7 +56,7 @@ public class DatabaseInstaller extends SQLiteOpenHelper {
 			} catch (IOException mIOException) {
 				throw new Error("ErrorCopyingDataBase");
 			}
-		}
+//		}
 	}
 
 	private boolean isDatabaseExist() {
@@ -103,7 +107,6 @@ public class DatabaseInstaller extends SQLiteOpenHelper {
 		int x = 111;
 		x = x + 12;
 	}
-
 
 }
 
