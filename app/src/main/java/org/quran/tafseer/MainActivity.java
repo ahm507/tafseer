@@ -62,19 +62,11 @@ public class MainActivity extends AppCompatActivity
 		Context context = getApplicationContext();
 		DatabaseInstaller db = new DatabaseInstaller(context);
 
-//		ProgressDialog hourGlassDlg = new ProgressDialog(this);
-//		hourGlassDlg.setMessage("برجاء الإنتظار");
-//		hourGlassDlg.setIndeterminate(true);
-//		hourGlassDlg.setCancelable(false);
-//		hourGlassDlg.show();
-
 		try {
 			db.install();
 		} catch (IOException exception) {
 			Log.e(LOG_TAG, "open >>" + exception.toString());
 		}
-
-//		hourGlassDlg.hide();
 
 		//Open DB and display initial view
 		dbHelper = new BookRepository(context);
@@ -183,15 +175,11 @@ public class MainActivity extends AppCompatActivity
 				return; // DO NO THING
 			}
 			if (records.size() != 1) {
-//				displayTextView.setText(Html.fromHtml("")); //just empty
 				displayTextView.loadData("", "text/html; charset=UTF-8", null);
 
 			} else {
 				Book record = records.get(0);
 				//Usually the book root. We come here as a previous gesture on the first record.
-//				if(record.parent_id.equals("NO_PARENT")) {
-//					return;
-//				}
 
 				String htmlContent = "";
 				if(record.book_code.endsWith("_txt")) {
@@ -214,10 +202,6 @@ public class MainActivity extends AppCompatActivity
 						content = Highlight.highlight(content, searchWords);
 					}
 					//Add title
-//					content = "<br><font color=\"blue\">" + record.title + "</font><hr>" + content;
-//					String htmlPagePrefix = "<html><body style='direction: rtl; text-align:justify; align-content: right;  text-align=right'><span align='right'>";
-//					String htmlPagePostfix = "</span></body><html>";
-//					htmlContent = htmlPagePrefix + content + htmlPagePostfix;
 					htmlContent = content;
 				} else {
 					throw new Exception("Unknown file type, book_id should end with .txt or .html");
@@ -410,7 +394,6 @@ public class MainActivity extends AppCompatActivity
 		}
 		return super.onTouchEvent(event);
 	}
-
 
 	void showAboutDialogue() {
 		AlertDialog.Builder aboutAlert = new AlertDialog.Builder(
