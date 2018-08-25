@@ -206,7 +206,9 @@ public class MainActivity extends AppCompatActivity
 				} else {
 					throw new Exception("Unknown file type, book_id should end with .txt or .html");
 				}
-				displayTextView.loadData(htmlContent, "text/html; charset=UTF-8", null);
+                //remove non breaking space 0xA0
+				htmlContent = htmlContent.replace('\u00A0',' ');
+                displayTextView.loadData(htmlContent, "text/html; charset=UTF-8", null);
 				curBookCode = record.book_code;
 				curPageId = record.page_id;
 

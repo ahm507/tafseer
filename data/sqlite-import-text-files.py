@@ -40,6 +40,7 @@ def strip_diacritics(text):
 
 
 file_names = ["Introduction.txt",
+			  "007-alahraf.txt",
               "18-Kahf.txt",
               "50-Qaf.txt",
               "54-Qamar.txt",
