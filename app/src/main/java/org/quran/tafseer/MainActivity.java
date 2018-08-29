@@ -31,9 +31,7 @@ import java.util.ArrayList;
 import java.util.Formatter;
 import java.util.Stack;
 
-public class MainActivity extends AppCompatActivity
-//		implements NavigationView.OnNavigationItemSelectedListener
-{
+public class MainActivity extends AppCompatActivity {
 
 	protected static final String LOG_TAG = "MainActivity";
 	BookRepository dbHelper;
